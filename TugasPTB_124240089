@@ -1,0 +1,130 @@
+#include <iostream>
+using namespace std;
+
+struct mhs {
+    int nim;
+    string nama;
+    mhs *kiri;
+    mhs *kanan;
+};
+
+// Fungsi membuat node baru
+mhs* buatNode(int nim, string nama) {
+    mhs* baru = new mhs;
+    baru->nim = nim;
+    baru->nama = nama;
+    baru->kiri = nullptr;
+    baru->kanan = nullptr;
+    return baru;
+}
+
+// Menyisipkan data ke BST
+mhs* sisip(mhs* root, int nim, string nama) {
+    if (root == nullptr) return buatNode(nim, nama);
+    if (nim < root->nim)
+        root->kiri = sisip(root->kiri, nim, nama);
+    else if (nim > root->nim)
+        root->kanan = sisip(root->kanan, nim, nama);
+    return root;
+}
+
+// Mencari NIM
+bool cari(mhs* root, int nim) {
+    if (root == nullptr) return false;
+    if (nim == root->nim) return true;
+    if (nim < root->nim)
+        return cari(root->kiri, nim);
+    else
+        return cari(root->kanan, nim);
+}
+
+// Inorder traversal (urutan menaik)
+void inorder(mhs* root) {
+    if (root != nullptr) {
+        inorder(root->kiri);
+        cout << root->nim << " - " << root->nama << endl;
+        inorder(root->kanan);
+    }
+}
+
+// Mencari node terkecil
+mhs* minValueNode(mhs* node) {
+    mhs* current = node;
+    while (current && current->kiri != nullptr)
+        current = current->kiri;
+    return current;
+}
+
+// Menghapus data berdasarkan NIM
+mhs* hapus(mhs* root, int nim) {
+    if (root == nullptr) return root;
+
+    if (nim < root->nim)
+        root->kiri = hapus(root->kiri, nim);
+    else if (nim > root->nim)
+        root->kanan = hapus(root->kanan, nim);
+    else {
+        if (root->kiri == nullptr) {
+            mhs* temp = root->kanan;
+            delete root;
+            return temp;
+        }
+        else if (root->kanan == nullptr) {
+            mhs* temp = root->kiri;
+            delete root;
+            return temp;
+        }
+
+        mhs* temp = minValueNode(root->kanan);
+        root->nim = temp->nim;
+        root->nama = temp->nama;
+        root->kanan = hapus(root->kanan, temp->nim);
+    }
+    return root;
+}
+
+int main() {
+    mhs* root = nullptr;
+    int pilihan, nim;
+    string nama;
+
+    do {
+        cout << "\nMenu:\n";
+        cout << "1. Tambah Mahasiswa\n";
+        cout << "2. Cari Mahasiswa\n";
+        cout << "3. Tampilkan Data (Inorder)\n";
+        cout << "4. Hapus Mahasiswa\n";
+        cout << "0. Keluar\n";
+        cout << "Pilih: ";
+        cin >> pilihan;
+
+        switch (pilihan) {
+        case 1:
+            cout << "Masukkan NIM: ";
+            cin >> nim;
+            cout << "Masukkan Nama: ";
+            cin >> nama;
+            root = sisip(root, nim, nama);
+            break;
+        case 2:
+            cout << "Masukkan NIM yang dicari: ";
+            cin >> nim;
+            if (cari(root, nim))
+                cout << "Mahasiswa ditemukan!\n";
+            else
+                cout << "Mahasiswa tidak ditemukan.\n";
+            break;
+        case 3:
+            cout << "Data Mahasiswa (Inorder):\n";
+            inorder(root);
+            break;
+        case 4:
+            cout << "Masukkan NIM yang akan dihapus: ";
+            cin >> nim;
+            root = hapus(root, nim);
+            break;
+        }
+    } while (pilihan != 0);
+
+    return 0;
+}
